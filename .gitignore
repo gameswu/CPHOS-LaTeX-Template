@@ -1,0 +1,22 @@
+# LaTeX compile artifacts
+*.aux
+*.bbl
+*.blg
+*.idx
+*.ind
+*.lof
+*.log
+*.lot
+*.out
+*.toc
+*.fls
+*.fdb_latexmk
+*.synctex.gz
+*.nav
+*.snm
+*.vrb
+*.bcf
+*.run.xml
+*.xdv
+*.pdf
+*.tex~

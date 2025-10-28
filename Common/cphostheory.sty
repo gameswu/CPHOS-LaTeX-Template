@@ -1,0 +1,404 @@
+% filepath: common/cphostheory.sty
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{cphostheory}[2025/10/28 CPHOS Theory Exam Template]
+
+%-------------------------------------------------------------------------------
+% 1. Packages
+%-------------------------------------------------------------------------------
+\RequirePackage{xparse}          % For advanced command definitions
+\RequirePackage{ctex}            % Chinese language support
+\RequirePackage{amsmath}         % Math environments
+\RequirePackage{fontspec}        % For font selection (requires Xe/LuaLaTeX)
+\RequirePackage{unicode-math}    % For math font selection
+\RequirePackage{geometry}        % Page layout
+\RequirePackage{fancyhdr}        % Headers and footers
+\RequirePackage{titling}         % Title customization
+\RequirePackage{datetime2}       % Date and time
+\RequirePackage{graphicx}        % Including images
+\RequirePackage{tabularx}        % Advanced tables
+\RequirePackage{enumitem}        % List customization
+\RequirePackage{etoolbox}        % Programming tools
+\RequirePackage{totcount}        % Total page count
+\RequirePackage{environ}         % For creating environments
+\RequirePackage{calc}            % Calculations
+\RequirePackage{mdframed}        % Framed boxes
+\RequirePackage{caption}         % Caption customization
+\RequirePackage{float}           % For [H] placement specifier
+\RequirePackage{multirow}        % For \multirow command in tables
+
+%-------------------------------------------------------------------------------
+% 2. Font and Document Settings
+%-------------------------------------------------------------------------------
+% Additional packages for cross-platform font detection
+\RequirePackage{iftex}           % TeX engine detection
+\RequirePackage{ifplatform}      % Platform detection
+% Set base font size to 五号 (10.5pt)
+\AtBeginDocument{\fontsize{10.5pt}{1.5\baselineskip}\selectfont}
+
+% Cross-platform font detection and setting
+% English fonts (generally available across platforms)
+\setmainfont{Times New Roman}
+\setsansfont{Arial}
+\setmonofont{Courier New}
+
+% Let ctex handle Chinese fonts automatically
+% ctex package already provides \kaishu, \songti, \heiti, etc. commands
+% \kaishu command is already defined by ctex package
+
+% Set math font with cross-platform support
+\ifwindows
+  \IfFontExistsTF{Cambria Math}{
+    \setmathfont{Cambria Math}
+  }{
+    \setmathfont{Latin Modern Math}
+  }
+\else
+  \ifmacosx
+    \IfFontExistsTF{STIX Two Math}{
+      \setmathfont{STIX Two Math}
+    }{
+      \IfFontExistsTF{Asana Math}{
+        \setmathfont{Asana Math}
+      }{
+        \setmathfont{Latin Modern Math}
+      }
+    }
+  \else
+    % Linux and other systems
+    \IfFontExistsTF{STIX Two Math}{
+      \setmathfont{STIX Two Math}
+    }{
+      \IfFontExistsTF{TeX Gyre Termes Math}{
+        \setmathfont{TeX Gyre Termes Math}
+      }{
+        \setmathfont{Latin Modern Math}
+      }
+    }
+  \fi
+\fi
+
+% Set paragraph indent to 2 characters
+\setlength{\parindent}{2em}
+
+%-------------------------------------------------------------------------------
+% 3. Title and Subtitle
+%-------------------------------------------------------------------------------
+\newcommand{\subtitle}[1]{\def\@subtitle{#1}}
+\def\@subtitle{} % Default empty subtitle
+
+\pretitle{\begin{center}\linespread{2.0}\selectfont\parskip=0.2\baselineskip\bfseries\zihao{3}\sffamily}
+\posttitle{\par\end{center}}
+\preauthor{}
+\postauthor{}
+\predate{}
+\postdate{}
+
+% Define date style and \now command outside of \maketitle
+\DTMnewdatestyle{cphosdate}{%
+  \renewcommand{\DTMdisplaydate}[4]{%
+    \number##1年\number##2月\number##3日%
+  }%
+  \renewcommand{\DTMDisplaydate}{\DTMdisplaydate}%
+}
+\DTMsetdatestyle{cphosdate}
+\newcommand{\now}{\DTMnow}
+
+% Define \TotalPage command globally
+\regtotcounter{page}
+\newcommand{\TotalPage}{\total{page}}
+
+\renewcommand{\maketitle}{%
+  \begin{titlingpage}
+    \vspace*{2em}
+    % Title
+    {\begin{center}\linespread{2.0}\selectfont\parskip=0.2\baselineskip\bfseries\zihao{3}\sffamily\thetitle\par\end{center}}
+    \vspace{0.5em}
+    % Subtitle
+    \ifx\@subtitle\@empty\else
+      {\begin{center}\linespread{2.0}\selectfont\parskip=0.2\baselineskip\bfseries\zihao{4}\sffamily\kaishu\@subtitle\par\end{center}}
+    \fi
+    \vspace{2em}
+    
+    % Information Block
+    \begin{center}
+      \linespread{2.0}\selectfont\kaishu\zihao{5}
+      \@cphospublishinfo\par
+      \linespread{1.0}\selectfont
+      \@cphosintro\par
+    \end{center}
+    
+    \vspace{1\baselineskip}
+    
+    % Schedule Table
+    \makecphosscheduletable
+    
+    \vspace{1\baselineskip}
+    
+    % Instructions
+    \begin{center}
+      \linespread{1.5}\selectfont\bfseries\zihao{5}\sffamily
+      \@cphosnoticetitle
+    \end{center}
+    \setlist[enumerate]{
+      label=\arabic*., 
+      leftmargin=*, 
+      labelindent=0em, 
+      itemindent=1em, 
+      listparindent=1em,
+      parsep=0pt
+    }
+    \begin{enumerate}\zihao{5}\sffamily
+      \@cphosinstructions
+    \end{enumerate}
+    
+  \end{titlingpage}
+  \pagestyle{fancy} % Activate fancyhdr from page 2 onwards
+}
+
+%-------------------------------------------------------------------------------
+% 3.1 Maketitle Configuration
+%-------------------------------------------------------------------------------
+\newcommand{\cphospublishinfo}[1]{\def\@cphospublishinfo{#1}}
+\newcommand{\cphosintro}[1]{\def\@cphosintro{#1}}
+\newcommand{\cphosnoticetitle}[1]{\def\@cphosnoticetitle{#1}}
+\newcommand{\cphosinstructions}[1]{\def\@cphosinstructions{#1}}
+
+% Default texts
+\cphospublishinfo{本试题于2025年9月5日08:00发布，最后更新于\now 。}
+\cphosintro{CPHOS物理竞赛联考是开放性公益性的考试，有意向参与的教师和学生可以关注“CPHOS”微信公众号进行报名，报名后方可参与联考。请使用“CPHOS物理竞赛联考”微信小程序完成答题卡上传、阅卷、成绩查询等操作。联系方式见试题末尾。}
+\cphosnoticetitle{考生须知}
+\cphosinstructions{
+  \item 理论试题共\textbf{\underline{\TotalPage}}页，理论答题卡共\textbf{\underline{7}}页，答题时间\textbf{\underline{180}}分钟，试题满分\textbf{\underline{\TotalScore}}分。
+  \item 请在答题卡的指定答题区域内答题，试题和草稿纸上的内容将不会作为评分参考，不可申请答题卡加页。
+  \item 若发现试题存在问题，请向领队（教练）反映，由其转达至相关微信群聊。
+  \item 试题答案及相关分析均会在官方网站www.cphos.cn上发布。
+  \item 本次考试定位难度为高于复赛、略低于决赛。
+}
+
+% Schedule Table Configuration
+\newcommand{\cphosuploadtimetitle}[1]{\def\@cphosuploadtimetitle{#1}}
+\newcommand{\cphosreviewtimetitle}[1]{\def\@cphosreviewtimetitle{#1}}
+\newcommand{\cphosuploadtimedata}[1]{\def\@cphosuploadtimedata{#1}}
+\newcommand{\cphosreviewtimedata}[1]{\def\@cphosreviewtimedata{#1}}
+\newcommand{\cphosunofficialresultstitle}[1]{\def\@cphosunofficialresultstitle{#1}}
+\newcommand{\cphosappealstitle}[1]{\def\@cphosappealstitle{#1}}
+\newcommand{\cphosofficialresultstitle}[1]{\def\@cphosofficialresultstitle{#1}}
+\newcommand{\cphosunofficialresultsdata}[1]{\def\@cphosunofficialresultsdata{#1}}
+\newcommand{\cphosappealsdata}[1]{\def\@cphosappealsdata{#1}}
+\newcommand{\cphosofficialresultsdata}[1]{\def\@cphosofficialresultsdata{#1}}
+
+% Default schedule texts
+\cphosuploadtimetitle{答题卡上传}
+\cphosreviewtimetitle{阅卷}
+\cphosuploadtimedata{2025/9/5 16:00 - 2025/9/9 10:00}
+\cphosreviewtimedata{2025/9/10 12:00 - 2025/9/14 18:00}
+\cphosunofficialresultstitle{非正式成绩}
+\cphosappealstitle{成绩申诉}
+\cphosofficialresultstitle{正式成绩}
+\cphosunofficialresultsdata{2025/9/14 20:00}
+\cphosappealsdata{2025/9/14 20:00 - 2025/9/15 18:00}
+\cphosofficialresultsdata{2025/9/15 22:00}
+
+\newcommand{\makecphosscheduletable}{%
+  \begin{center}
+    \setlength{\tabcolsep}{0pt}
+    \begin{tabularx}{\textwidth}{@{} >{\centering\arraybackslash}X @{} >{\centering\arraybackslash}X @{}}
+      \@cphosuploadtimetitle & \@cphosreviewtimetitle \\
+      \@cphosuploadtimedata & \@cphosreviewtimedata \\
+    \end{tabularx}
+    \begin{tabularx}{\textwidth}{@{}X@{}}
+      \rule{0pt}{2.5ex} \\ % Empty row
+    \end{tabularx}
+    \begin{tabularx}{\textwidth}{@{} >{\centering\arraybackslash}X >{\centering\arraybackslash}X >{\centering\arraybackslash}X @{}}
+      \@cphosunofficialresultstitle & \@cphosappealstitle & \@cphosofficialresultstitle \\
+      \@cphosunofficialresultsdata & \@cphosappealsdata & \@cphosofficialresultsdata \\
+    \end{tabularx}
+  \end{center}
+}
+
+%-------------------------------------------------------------------------------
+% 4. Header and Footer
+%-------------------------------------------------------------------------------
+\fancyhf{} % Clear all header and footer fields
+\fancyhead[L]{\zihao{-5}\kaishu\thetitle}
+\fancyhead[R]{\zihao{-5}\kaishu\@subtitle}
+\fancyfoot[L]{\zihao{-5}\kaishu\thepage\ / \TotalPage}
+\fancyfoot[R]{\zihao{-5}\kaishu © \the\year\ CPHOS}
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0pt}
+\pagestyle{fancy}
+\fancypagestyle{plain}{%
+  \fancyhf{}%
+  \fancyfoot[L]{\zihao{-5}\kaishu\thepage\ / \TotalPage}
+  \fancyfoot[R]{\zihao{-5}\kaishu © \the\year\ CPHOS}
+  \renewcommand{\headrulewidth}{0pt}
+  \renewcommand{\footrulewidth}{0pt}
+}
+\AtBeginDocument{\thispagestyle{plain}} % First page style
+
+%-------------------------------------------------------------------------------
+% 5. Problem and Answer Environments
+%-------------------------------------------------------------------------------
+% Counters
+\newcounter{problem}
+\newcounter{subproblem}[problem]
+\newcounter{subsubproblem}[subproblem]
+\newcounter{problemeq}[problem]
+\newcounter{problemfig}[problem]
+\newcounter{answerfig}[problem]
+
+\renewcommand{\thesubproblem}{(\arabic{subproblem})}
+\renewcommand{\thesubsubproblem}{\arabic{subproblem}.\arabic{subsubproblem}}
+\renewcommand{\theproblemeq}{(\arabic{problemeq})}
+\renewcommand{\theproblemfig}{图\arabic{problem}.\arabic{problemfig}}
+\renewcommand{\theanswerfig}{答图\arabic{problem}.\arabic{answerfig}}
+
+% Total score counter
+\newcounter{totalscore}
+\setcounter{totalscore}{0}
+\newcommand{\TotalScore}{\arabic{totalscore}}
+
+% Problem command
+\NewDocumentCommand{\problem}{O{} O{\arabic{problem}} m}{%
+  \stepcounter{problem}%
+  \setcounter{subproblem}{0}%
+  \setcounter{problemeq}{0}%
+  \setcounter{problemfig}{0}%
+  \setcounter{answerfig}{0}%
+  \addtocounter{totalscore}{#3}%
+  \section*{%
+    \zihao{5}\sffamily
+    \bfseries 题目 \expandafter\expandafter\expandafter\MakeUppercase\expandafter{\romannumeral#2}
+    \ifstrempty{#1}{}{：#1}
+    （本题共 #3 分）%
+  }%
+  \setlength{\parindent}{2em}%
+  \zihao{5}\sffamily
+}
+
+% Subproblem commands
+\NewDocumentCommand{\subproblem}{o}{%
+  \stepcounter{subproblem}%
+  \setcounter{subsubproblem}{0}%
+  \par\noindent\zihao{5}\sffamily
+  \IfValueT{#1}{\textbf{#1}\quad}%
+}
+\NewDocumentCommand{\subsubproblem}{o}{%
+  \stepcounter{subsubproblem}%
+  \par\noindent\zihao{5}\sffamily
+  \IfValueT{#1}{\textbf{#1}\quad}%
+}
+
+% Equation numbering within problems
+\let\oldtheequation\theequation
+\AtBeginEnvironment{problem}{\renewcommand{\theequation}{\theproblemeq}\stepcounter{problemeq}}
+\AtEndEnvironment{problem}{\let\theequation\oldtheequation}
+
+% Custom caption command
+\DeclareCaptionFormat{cphosformat}{#1#2#3\par}
+\captionsetup{format=cphosformat, labelsep=colon, justification=centering, font={small, sf}}
+\newcommand{\cphoscaption}[1]{{\zihao{5}\caption{#1}}}
+
+% Figure environment setup
+\AtBeginEnvironment{figure}{\zihao{5}\sffamily}
+
+%-------------------------------------------------------------------------------
+% 6. Answer Section (for solution files)
+%-------------------------------------------------------------------------------
+% Answer commands (placeholders, full implementation is complex)
+\newcommand{\answer}[1]{\section*{答案（#1分）}}
+\newcommand{\subanswer}[2][]{\subsection*{#1 (#2分)}}
+\newcommand{\subsubanswer}[2][]{\subsubsection*{#1 (#2分)}}
+
+% cphosequation environment
+\NewEnviron{cphosequation}[1][]{%
+  \begin{equation}
+    \BODY
+  \end{equation}
+}
+
+% Command to print score distribution (placeholder)
+\newcommand{\printanswerscore}{%
+  \par\bigskip\noindent
+  \zihao{5}\bfseries\sffamily
+  % This requires a complex tracking mechanism, providing a static example for now.
+  【评分标准打印功能需要复杂的LaTeX编程，此处为占位符】
+}
+
+%-------------------------------------------------------------------------------
+% 7. Contact Information
+%-------------------------------------------------------------------------------
+\newcommand{\makecontactinfo}{%
+  \newpage % Or \vfill to place at bottom
+  \begin{center}
+    \zihao{5}\bfseries\sffamily \@cphoscopyrightinfotitle \par
+    \vspace{1.5ex}
+    \begin{minipage}{0.8\textwidth}
+      \setlength{\parindent}{0em}
+      \zihao{5}\sffamily
+      \bfseries \@cphosauthorstitle \par
+      \setlength{\parindent}{2em}
+      \@cphosauthors\par
+      \vspace{1ex}
+      \setlength{\parindent}{0em}
+      \bfseries \@cphosreviewerstitle \par
+      \setlength{\parindent}{2em}
+      \@cphosreviewers\par
+    \end{minipage}
+    \vspace{3ex}
+
+    \bfseries \@cphoscontactinfotitle \par
+    \vspace{1ex}
+    \setlength{\tabcolsep}{0pt}
+    \renewcommand{\arraystretch}{1.5}
+    \begin{tabularx}{\textwidth}{
+      >{\centering\arraybackslash}X
+      >{\centering\arraybackslash}X
+      >{\centering\arraybackslash}X
+      >{\centering\arraybackslash}X
+    }
+      \includegraphics[height=5em]{\@cphoswechatqrcode} &
+      \includegraphics[height=5em]{\@cphoswebqrcode} &
+      \includegraphics[height=5em]{\@cphosforumqrcode} &
+      \multirow{2}{=}{\centering \@cphosemail \\ \@cphosminiprogram} \\
+      \@cphoswechataccount & \@cphoswebsite & \@cphosforum & \\
+    \end{tabularx}
+  \end{center}
+}
+
+%-------------------------------------------------------------------------------
+% 7.1 Contact Information Configuration
+%-------------------------------------------------------------------------------
+\newcommand{\cphoscopyrightinfotitle}[1]{\def\@cphoscopyrightinfotitle{#1}}
+\newcommand{\cphosauthorstitle}[1]{\def\@cphosauthorstitle{#1}}
+\newcommand{\cphosauthors}[1]{\def\@cphosauthors{#1}}
+\newcommand{\cphosreviewerstitle}[1]{\def\@cphosreviewerstitle{#1}}
+\newcommand{\cphosreviewers}[1]{\def\@cphosreviewers{#1}}
+\newcommand{\cphoscontactinfotitle}[1]{\def\@cphoscontactinfotitle{#1}}
+\newcommand{\cphoswechatqrcode}[1]{\def\@cphoswechatqrcode{#1}}
+\newcommand{\cphoswebqrcode}[1]{\def\@cphoswebqrcode{#1}}
+\newcommand{\cphosforumqrcode}[1]{\def\@cphosforumqrcode{#1}}
+\newcommand{\cphosemail}[1]{\def\@cphosemail{#1}}
+\newcommand{\cphosminiprogram}[1]{\def\@cphosminiprogram{#1}}
+\newcommand{\cphoswechataccount}[1]{\def\@cphoswechataccount{#1}}
+\newcommand{\cphoswebsite}[1]{\def\@cphoswebsite{#1}}
+\newcommand{\cphosforum}[1]{\def\@cphosforum{#1}}
+
+% Default contact info
+\cphoscopyrightinfotitle{版权信息}
+\cphosauthorstitle{命题人}
+\cphosauthors{（在此处插入姓名）}
+\cphosreviewerstitle{审题人}
+\cphosreviewers{（在此处插入姓名）}
+\cphoscontactinfotitle{联系方式}
+\cphoswechatqrcode{../Assets/wechat_qrcode.jpg}
+\cphoswebqrcode{../Assets/web_qrcode.png}
+\cphosforumqrcode{../Assets/forum_qrcode.png}
+\cphosemail{邮箱 service@cphos.cn}
+\cphosminiprogram{微信小程序 CPHOS物理竞赛联考}
+\cphoswechataccount{微信公众号“CPHOS”}
+\cphoswebsite{官方网站www.cphos.cn}
+\cphosforum{CPHOS论坛}
+
+\endinput
+%% End of file `cphostheory.sty'.
